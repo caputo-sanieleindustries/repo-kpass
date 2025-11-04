@@ -5,7 +5,6 @@ import { Label } from './ui/label';
 import { ScrollArea } from './ui/scroll-area';
 import axios from 'axios';
 import ExportInfoDialog from './ExportInfoDialog';
-import { encryptPassword } from '../utils/crypto';
 
 const API = '/api';
 
