@@ -347,12 +347,13 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 sm:pt-4 sticky bottom-0 bg-background">
                   <Button 
                     variant="outline" 
                     onClick={onClose}
                     data-testid="cancel-button"
                     disabled={loading}
+                    className="w-full sm:w-auto text-sm sm:text-base"
                   >
                     Annulla
                   </Button>
@@ -360,6 +361,7 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
                     onClick={handleImport}
                     disabled={loading || !selectedFile}
                     data-testid="import-button"
+                    className="w-full sm:w-auto text-sm sm:text-base"
                   >
                     {loading ? 'Importazione...' : 'Importa'}
                   </Button>
