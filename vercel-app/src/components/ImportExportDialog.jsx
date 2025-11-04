@@ -144,12 +144,13 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
             )}
 
             {warnings.length > 0 && (
-              <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-4">
-                <p className="font-semibold text-green-900 mb-2">✅ Password Criptate Automaticamente!</p>
-                <p className="text-sm text-green-800 mb-2">
-                  {warnings.length} password in chiaro sono state automaticamente criptate con la tua master password prima del salvataggio.
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded mb-4">
+                <p className="font-semibold text-amber-900 mb-2">⚠️ Password in Chiaro Rilevate!</p>
+                <p className="text-sm text-amber-800 mb-2">
+                  Sono state importate {warnings.length} password in formato non criptato. 
+                  Si consiglia di modificarle e salvarle nuovamente per crittarle.
                 </p>
-                <details className="text-sm text-green-700">
+                <details className="text-sm text-amber-700">
                   <summary className="cursor-pointer font-semibold">Mostra dettagli</summary>
                   <ul className="mt-2 space-y-1 ml-4 max-h-32 overflow-y-auto">
                     {warnings.map((warning, index) => (
