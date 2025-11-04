@@ -57,4 +57,11 @@ async function handler(req, res) {
   }
 }
 
+// Vercel serverless function configuration
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 export default handleCors(authMiddleware(handler));
