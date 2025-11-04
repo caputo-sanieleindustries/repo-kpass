@@ -258,20 +258,20 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh]" data-testid="import-export-dialog" aria-describedby="dialog-description">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto" data-testid="import-export-dialog" aria-describedby="dialog-description">
         <DialogHeader>
-          <DialogTitle data-testid="dialog-title">
+          <DialogTitle data-testid="dialog-title" className="text-lg sm:text-xl">
             {mode === 'import' ? '📥 Importa Password' : '📤 Esporta Password'}
           </DialogTitle>
-          <DialogDescription id="dialog-description">
+          <DialogDescription id="dialog-description" className="text-sm">
             {mode === 'import' 
               ? 'Carica un file CSV, XML, XLSX o XLSM con le tue password. Supporta formati da 1Password, LastPass e altri.'
               : 'Esporta le tue password in formato criptato. Avrai bisogno della master password per decriptarle.'}
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[60vh]">
-          <div className="pr-4">
+        <ScrollArea className="max-h-[55vh] sm:max-h-[60vh]">
+          <div className="pr-2 sm:pr-4">
             {error && (
               <div className="error-message mb-4" data-testid="dialog-error">
                 {error}
