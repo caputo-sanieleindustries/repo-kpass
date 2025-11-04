@@ -323,11 +323,12 @@ export default function Dashboard({ setIsAuthenticated }) {
                     {revealedPasswords[pwd.id] && (
                       <button 
                         className="btn-icon" 
-                        onClick={() => copyToClipboard(revealedPasswords[pwd.id], 'Password')}
+                        onClick={() => copyToClipboard(revealedPasswords[pwd.id], 'Password', pwd.id)}
                         data-testid={`copy-password-${pwd.id}`}
-                        title="Copia"
+                        title="Copia password"
+                        style={{ backgroundColor: copyFeedback[`Password-${pwd.id}`] ? '#4caf50' : '' }}
                       >
-                        📋
+                        {copyFeedback[`Password-${pwd.id}`] ? '✓' : '📋'}
                       </button>
                     )}
                   </div>
