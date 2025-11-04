@@ -79,11 +79,88 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
     setLoading(true);
     setError('');
     setWarnings([]);
+    setProcessingStatus('Lettura file...');
 
     try {
+      const masterPassword = localStorage.getItem('masterPassword');
+      if (!masterPassword) {
+        setError('Master password non trovata. Effettua nuovamente il login.');
+        setLoading(false);
+        return;
+      }
+
+      // Leggi il file
+      const fileContent = await selectedFile.text();
+      const extension = selectedFile.name.split('.').pop().toLowerCase();
+      
+      let records = [];
+      
+      if (extension === 'csv') {
+        setProcessingStatus('Parsing CSV...');
+        records = parseCSV(fileContent);
+      } else {
+        // Per XML/Excel, usa il backend ma cripta prima
+        setError('Per file XML/XLSX, usa la funzione di import standard (in sviluppo)');
+        setLoading(false);
+        return;
+      }
+
+      if (records.length === 0) {
+        setError('Nessun record trovato nel file');
+        setLoading(false);
+        return;
+      }
+
+      setProcessingStatus(`Processamento ${records.length} password...`);
+      
+      // Processa ogni record e cripta password in chiaro
+      const processedRecords = [];
+      const plainTextWarnings = [];
+      
+      for (let i = 0; i < records.length; i++) {
+        const record = records[i];
+        setProcessingStatus(`Crittografia password ${i + 1}/${records.length}...`);
+        
+        // Trova la colonna password (può avere nomi diversi)
+        let passwordValue = record.password || record.Password || record.pwd || 
+                           record.encrypted_password || record['Encrypted Password'] || '';
+        
+        // Se la password è in chiaro, criptala
+        if (passwordValue && isPlainTextPassword(passwordValue)) {
+          plainTextWarnings.push(record.title || record.Title || record.name || record.Name || 'Untitled');
+          try {
+            passwordValue = await encryptPassword(passwordValue, masterPassword);
+          } catch (err) {
+            console.error('Errore crittografia:', err);
+            setError(`Errore durante la crittografia della password ${i + 1}`);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // Aggiorna il record con la password criptata
+        processedRecords.push({
+          ...record,
+          encrypted_password: passwordValue,
+          password: undefined // Rimuovi campo originale
+        });
+      }
+
+      if (plainTextWarnings.length > 0) {
+        setWarnings(plainTextWarnings.map(name => `Password criptata per: ${name}`));
+      }
+
+      // Ora invia i record processati al backend
+      setProcessingStatus('Caricamento sul server...');
+      
+      // Converti i record in CSV per inviarli al backend
+      const processedCSV = convertToCSV(processedRecords);
+      const blob = new Blob([processedCSV], { type: 'text/csv' });
+      const processedFile = new File([blob], 'processed_import.csv', { type: 'text/csv' });
+      
       const token = localStorage.getItem('token');
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', processedFile);
 
       const response = await axios.post(`${API}/passwords/import`, formData, {
         headers: {
@@ -92,27 +169,45 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
         }
       });
 
-      // Mostra warning se ci sono password in chiaro
-      if (response.data.warnings && response.data.warnings.length > 0) {
-        setWarnings(response.data.warnings);
-      }
-
       let message = response.data.message;
-      if (response.data.warning_message) {
-        message += '\n\n' + response.data.warning_message;
+      if (plainTextWarnings.length > 0) {
+        message += `\n\n✅ ${plainTextWarnings.length} password in chiaro sono state automaticamente criptate!`;
       }
 
       onSuccess(message);
       
       // Non chiudere subito se ci sono warning
-      if (!response.data.warnings || response.data.warnings.length === 0) {
+      if (plainTextWarnings.length === 0) {
         onClose();
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Errore durante l\'importazione');
+      setError(err.response?.data?.detail || err.message || 'Errore durante l\'importazione');
     } finally {
       setLoading(false);
+      setProcessingStatus('');
     }
+  };
+
+  // Funzione helper per convertire records in CSV
+  const convertToCSV = (records) => {
+    if (records.length === 0) return '';
+    
+    const headers = Object.keys(records[0]);
+    const csvLines = [headers.join(',')];
+    
+    records.forEach(record => {
+      const values = headers.map(header => {
+        const value = record[header] || '';
+        // Escape virgolette e racchiudi in virgolette se contiene virgole
+        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+          return `"${value.replace(/"/g, '""')}"`;
+        }
+        return value;
+      });
+      csvLines.push(values.join(','));
+    });
+    
+    return csvLines.join('\n');
   };
 
   const handleExportClick = () => {
