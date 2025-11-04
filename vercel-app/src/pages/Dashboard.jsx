@@ -277,11 +277,12 @@ export default function Dashboard({ setIsAuthenticated }) {
                       </span>
                       <button 
                         className="btn-icon" 
-                        onClick={() => copyToClipboard(pwd.email, 'Email')}
+                        onClick={() => copyToClipboard(pwd.email, 'Email', pwd.id)}
                         data-testid={`copy-email-${pwd.id}`}
-                        title="Copia"
+                        title="Copia email"
+                        style={{ backgroundColor: copyFeedback[`Email-${pwd.id}`] ? '#4caf50' : '' }}
                       >
-                        📋
+                        {copyFeedback[`Email-${pwd.id}`] ? '✓' : '📋'}
                       </button>
                     </div>
                   )}
