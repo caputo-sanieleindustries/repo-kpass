@@ -168,94 +168,119 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
               </div>
             )}
 
-        {mode === 'import' ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="file">Seleziona File</Label>
-              <input
-                id="file"
-                data-testid="file-input"
-                type="file"
-                accept=".csv,.xml,.xlsx,.xlsm"
-                onChange={handleFileChange}
-                className="form-input"
-              />
-              {selectedFile && (
-                <p className="text-sm text-gray-600" data-testid="selected-file">
-                  File selezionato: {selectedFile.name}
-                </p>
-              )}
-            </div>
+            {mode === 'import' ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="file">Seleziona File</Label>
+                  <input
+                    id="file"
+                    data-testid="file-input"
+                    type="file"
+                    accept=".csv,.xml,.xlsx,.xlsm"
+                    onChange={handleFileChange}
+                    className="form-input"
+                  />
+                  {selectedFile && (
+                    <p className="text-sm text-gray-600" data-testid="selected-file">
+                      File selezionato: {selectedFile.name}
+                    </p>
+                  )}
+                </div>
 
-            <div className="info-box">
-              <strong>Formati supportati:</strong>
-              <ul className="text-sm mt-2">
-                <li>• CSV - 1Password, LastPass, formato generico</li>
-                <li>• XML - Formato strutturato</li>
-                <li>• XLSX/XLSM - Excel</li>
-              </ul>
-            </div>
+                <div className="info-box">
+                  <strong>Formati supportati:</strong>
+                  <ul className="text-sm mt-2 space-y-1">
+                    <li>• CSV - 1Password, LastPass, formato generico</li>
+                    <li>• XML - Formato strutturato</li>
+                    <li>• XLSX/XLSM - Excel</li>
+                  </ul>
+                  <p className="text-sm mt-3 text-blue-700">
+                    <strong>✨ Mapping Intelligente:</strong> Il sistema riconosce automaticamente 27+ varianti di nomi colonne e normalizza i dati.
+                  </p>
+                </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button 
-                variant="outline" 
-                onClick={onClose}
-                data-testid="cancel-button"
-              >
-                Annulla
-              </Button>
-              <Button 
-                onClick={handleImport}
-                disabled={loading || !selectedFile}
-                data-testid="import-button"
-              >
-                {loading ? 'Importazione...' : 'Importa'}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Formato Esportazione</Label>
-              <div className="format-options" data-testid="format-options">
-                {['csv', 'xml', 'xlsx', 'xlsm'].map(format => (
-                  <label key={format} className="format-option">
-                    <input
-                      type="radio"
-                      name="format"
-                      value={format}
-                      checked={exportFormat === format}
-                      onChange={(e) => setExportFormat(e.target.value)}
-                      data-testid={`format-${format}`}
-                    />
-                    <span>{format.toUpperCase()}</span>
-                  </label>
-                ))}
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={onClose}
+                    data-testid="cancel-button"
+                    disabled={loading}
+                  >
+                    Annulla
+                  </Button>
+                  <Button 
+                    onClick={handleImport}
+                    disabled={loading || !selectedFile}
+                    data-testid="import-button"
+                  >
+                    {loading ? 'Importazione...' : 'Importa'}
+                  </Button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Formato Esportazione</Label>
+                  <div className="format-options" data-testid="format-options">
+                    {['csv', 'xml', 'xlsx', 'xlsm'].map(format => (
+                      <label key={format} className="format-option">
+                        <input
+                          type="radio"
+                          name="format"
+                          value={format}
+                          checked={exportFormat === format}
+                          onChange={(e) => setExportFormat(e.target.value)}
+                          data-testid={`format-${format}`}
+                        />
+                        <span>{format.toUpperCase()}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="warning-box">
-              <strong>⚠️ Nota:</strong> Le password esportate sono criptate. Per decriptarle avrai bisogno della tua master password.
-            </div>
+                <div className="warning-box">
+                  <strong>⚠️ Nota:</strong> Le password esportate sono criptate con AES-256. Per decriptarle avrai bisogno della tua master password.
+                </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button 
-                variant="outline" 
-                onClick={onClose}
-                data-testid="cancel-button"
-              >
-                Annulla
-              </Button>
-              <Button 
-                onClick={handleExport}
-                disabled={loading}
-                data-testid="export-button"
-              >
-                {loading ? 'Esportazione...' : 'Esporta'}
-              </Button>
-            </div>
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
+                  <p className="text-sm text-gray-800 mb-2">
+                    <strong>🔓 Come decrittare le password?</strong>
+                  </p>
+                  <p className="text-sm text-gray-700 mb-3">
+                    Usa il nostro tool di decrittazione offline per leggere le password esportate in modo sicuro.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open('/decrypt.html', '_blank')}
+                    className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
+                  >
+                    🔓 Apri Tool Decrittazione
+                  </Button>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={onClose}
+                    data-testid="cancel-button"
+                    disabled={loading}
+                  >
+                    Annulla
+                  </Button>
+                  <Button 
+                    onClick={handleExportClick}
+                    disabled={loading}
+                    data-testid="export-button"
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    {loading ? 'Esportazione...' : 'Esporta Password'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
