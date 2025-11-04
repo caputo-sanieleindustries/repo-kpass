@@ -9,6 +9,44 @@ import { encryptPassword } from '../utils/crypto';
 
 const API = '/api';
 
+// Verifica se una password è in chiaro (euristica)
+const isPlainTextPassword = (password) => {
+  if (!password || password.length === 0) return false;
+  
+  // Se contiene ':' e caratteri hex, probabilmente è criptata (formato iv:encrypted)
+  if (password.includes(':') && /^[0-9a-f]+:[0-9a-f]+$/i.test(password)) {
+    return false;
+  }
+  
+  // Se è molto lunga (>64 char) e solo hex, probabilmente è criptata
+  if (password.length > 64 && /^[0-9a-f]+$/i.test(password)) {
+    return false;
+  }
+  
+  // Altrimenti, considera come testo in chiaro
+  return true;
+};
+
+// Parsing CSV client-side
+const parseCSV = (text) => {
+  const lines = text.split('\n').filter(line => line.trim());
+  if (lines.length < 2) return [];
+  
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"/, '').replace(/"$/, ''));
+  const records = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim().replace(/^"/, '').replace(/"$/, ''));
+    const record = {};
+    headers.forEach((header, index) => {
+      record[header] = values[index] || '';
+    });
+    records.push(record);
+  }
+  
+  return records;
+};
+
 export default function ImportExportDialog({ mode, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [exportFormat, setExportFormat] = useState('csv');
@@ -16,6 +54,7 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
   const [error, setError] = useState('');
   const [showExportInfo, setShowExportInfo] = useState(false);
   const [warnings, setWarnings] = useState([]);
+  const [processingStatus, setProcessingStatus] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
