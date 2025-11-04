@@ -130,14 +130,25 @@ export default function Dashboard({ setIsAuthenticated }) {
         return newState;
       });
     } else {
-      // Reveal password
+      // Decrypt and show password
       try {
-        const masterPassword = localStorage.getItem('masterPassword');
-        const decrypted = await decryptPassword(encryptedPassword, masterPassword);
-        setRevealedPasswords(prev => ({ ...prev, [passwordId]: decrypted }));
+        // Verifica se la password è in formato criptato (iv:encrypted)
+        const isEncrypted = encryptedPassword && encryptedPassword.includes(':') && 
+                           /^[0-9a-f]+:[0-9a-f]+$/i.test(encryptedPassword);
+        
+        if (isEncrypted) {
+          // Password criptata - decripta
+          const masterPassword = localStorage.getItem('masterPassword');
+          const decrypted = await decryptPassword(encryptedPassword, masterPassword);
+          setRevealedPasswords(prev => ({ ...prev, [passwordId]: decrypted }));
+        } else {
+          // Password in chiaro - mostra direttamente
+          setRevealedPasswords(prev => ({ ...prev, [passwordId]: encryptedPassword || '(vuota)' }));
+        }
       } catch (err) {
         console.error('Error decrypting password:', err);
-        alert('Errore nella decrittazione della password');
+        // Fallback: prova a mostrare come testo in chiaro
+        setRevealedPasswords(prev => ({ ...prev, [passwordId]: encryptedPassword || '(errore decrypt)' }));
       }
     }
   };
