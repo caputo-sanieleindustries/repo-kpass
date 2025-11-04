@@ -439,6 +439,8 @@
         // Form submit handler
         document.getElementById('decryptForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            console.log('Form submitted!'); // Debug
 
             const encryptedPassword = document.getElementById('encryptedPassword').value.trim();
             const masterPassword = document.getElementById('masterPassword').value;
@@ -448,20 +450,46 @@
             const resultContent = document.getElementById('resultContent');
             const decryptBtn = document.getElementById('decryptBtn');
 
+            console.log('Encrypted:', encryptedPassword); // Debug
+            console.log('Username:', username); // Debug
+
+            // Validazione input
+            if (!encryptedPassword) {
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultTitle.textContent = '❌ Errore';
+                resultContent.innerHTML = '<p>Inserisci la password criptata</p>';
+                return;
+            }
+
+            if (!masterPassword) {
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultTitle.textContent = '❌ Errore';
+                resultContent.innerHTML = '<p>Inserisci la master password</p>';
+                return;
+            }
+
             // Reset UI
             resultDiv.className = 'result';
             resultDiv.style.display = 'none';
             decryptBtn.disabled = true;
             decryptBtn.textContent = '🔄 Decrittazione in corso...';
 
+            // Timeout per dare feedback
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             try {
+                console.log('Starting decryption...'); // Debug
                 const decryptedPassword = await decryptPassword(encryptedPassword, masterPassword, username);
+                console.log('Decryption successful!'); // Debug
 
                 // Mostra risultato
                 resultDiv.className = 'result success';
+                resultDiv.style.display = 'block';
                 resultTitle.textContent = '✅ Password Decrittata con Successo!';
                 resultContent.innerHTML = `
-                    <div class="decrypted-password" id="decryptedPasswordDisplay">${decryptedPassword}</div>
+                    <div class="decrypted-password" id="decryptedPasswordDisplay">${escapeHtml(decryptedPassword)}</div>
                     <button class="btn copy-btn" onclick="handleCopy()">
                         📋 Copia Password
                     </button>
@@ -471,14 +499,28 @@
                 window.currentDecryptedPassword = decryptedPassword;
 
             } catch (error) {
+                console.error('Decryption error:', error); // Debug
                 resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
                 resultTitle.textContent = '❌ Errore di Decrittazione';
-                resultContent.innerHTML = `<p>${error.message}</p>`;
+                resultContent.innerHTML = `<p>${escapeHtml(error.message)}</p>`;
             } finally {
                 decryptBtn.disabled = false;
                 decryptBtn.textContent = '🔓 Decritta Password';
             }
         });
+
+        // Escape HTML per sicurezza
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
 
         // Handler per copia password
         async function handleCopy() {
