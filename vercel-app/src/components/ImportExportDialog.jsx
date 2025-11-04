@@ -192,11 +192,12 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
   const convertToCSV = (records) => {
     if (records.length === 0) return '';
     
-    const headers = Object.keys(records[0]);
-    const csvLines = [headers.join(',')];
+    // Usa solo le colonne necessarie, escludendo quelle extra
+    const validHeaders = ['title', 'email', 'username', 'encrypted_password', 'url', 'notes'];
+    const csvLines = [validHeaders.join(',')];
     
     records.forEach(record => {
-      const values = headers.map(header => {
+      const values = validHeaders.map(header => {
         const value = record[header] || '';
         // Escape virgolette e racchiudi in virgolette se contiene virgole
         if (value.includes(',') || value.includes('"') || value.includes('\n')) {
