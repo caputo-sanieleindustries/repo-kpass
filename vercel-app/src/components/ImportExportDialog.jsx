@@ -75,9 +75,15 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
     }
   };
 
+  const handleExportClick = () => {
+    // Mostra il dialog informativo prima dell'export
+    setShowExportInfo(true);
+  };
+
   const handleExport = async () => {
     setLoading(true);
     setError('');
+    setShowExportInfo(false);
 
     try {
       const token = localStorage.getItem('token');
@@ -96,7 +102,7 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      onSuccess('Export completato con successo');
+      onSuccess('Export completato con successo! Usa il tool di decrittazione per leggere le password.');
       onClose();
     } catch (err) {
       setError(err.response?.data?.detail || 'Errore durante l\'esportazione');
