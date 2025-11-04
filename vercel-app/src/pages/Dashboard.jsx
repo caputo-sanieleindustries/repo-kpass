@@ -142,12 +142,29 @@ export default function Dashboard({ setIsAuthenticated }) {
     }
   };
 
-  const copyToClipboard = async (text, type) => {
+  const [copyFeedback, setCopyFeedback] = useState({});
+
+  const copyToClipboard = async (text, type, id = null) => {
     try {
       await navigator.clipboard.writeText(text);
+      
+      // Mostra feedback visivo
+      const feedbackKey = id ? `${type}-${id}` : type;
+      setCopyFeedback(prev => ({ ...prev, [feedbackKey]: true }));
+      
+      // Rimuovi feedback dopo 2 secondi
+      setTimeout(() => {
+        setCopyFeedback(prev => {
+          const newFeedback = { ...prev };
+          delete newFeedback[feedbackKey];
+          return newFeedback;
+        });
+      }, 2000);
+      
       console.log(`${type} copiato negli appunti`);
     } catch (err) {
       console.error('Error copying to clipboard:', err);
+      alert('Impossibile copiare. Prova manualmente.');
     }
   };
 
