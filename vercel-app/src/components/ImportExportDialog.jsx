@@ -41,6 +41,8 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
     setWarnings([]);
 
     try {
+      // IMPORTANTE: Per ora upload diretto al backend
+      // Il backend cripta le password in chiaro durante l'import
       const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('file', selectedFile);
@@ -64,10 +66,11 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
 
       onSuccess(message);
       
-      // Non chiudere subito se ci sono warning
-      if (!response.data.warnings || response.data.warnings.length === 0) {
-        onClose();
-      }
+      // Ricarica la pagina per aggiornare la lista password
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
     } catch (err) {
       setError(err.response?.data?.detail || 'Errore durante l\'importazione');
     } finally {
