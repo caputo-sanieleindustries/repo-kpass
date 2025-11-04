@@ -20,12 +20,33 @@ function normalizeColumnName(columnName) {
 function mapColumn(columnName) {
   const normalized = normalizeColumnName(columnName);
   
+  // Fase 1: Match esatto (massima priorità)
   for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
     for (const variant of variants) {
-      if (normalized === normalizeColumnName(variant) || 
-          normalized.includes(normalizeColumnName(variant)) ||
-          normalizeColumnName(variant).includes(normalized)) {
+      const normalizedVariant = normalizeColumnName(variant);
+      if (normalized === normalizedVariant) {
         return property;
+      }
+    }
+  }
+  
+  // Fase 2: Colonna contiene variante completa come parola
+  const normalizedWords = normalized.split(' ');
+  for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
+    for (const variant of variants) {
+      const normalizedVariant = normalizeColumnName(variant);
+      const variantWords = normalizedVariant.split(' ');
+      
+      // Se la variante è multi-word, deve matchare esattamente quella sequenza
+      if (variantWords.length > 1) {
+        if (normalized.includes(normalizedVariant)) {
+          return property;
+        }
+      } else {
+        // Per single-word variants, match come parola intera
+        if (normalizedWords.includes(normalizedVariant)) {
+          return property;
+        }
       }
     }
   }
