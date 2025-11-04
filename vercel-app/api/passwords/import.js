@@ -15,24 +15,25 @@ export const config = {
 };
 
 // Mapping robusto per 27+ varianti di nomi colonne
+// IMPORTANTE: Le varianti più specifiche devono essere prima (es: 'user email' prima di 'user')
 const COLUMN_MAPPINGS = {
+  // Email variants (più specifiche prima)
+  email: ['email address', 'e-mail address', 'user email', 'email', 'e-mail', 'mail'],
+  
+  // Username variants (più specifiche prima)
+  username: ['username', 'user name', 'login name', 'account name', 'user id', 'userid', 'login', 'user'],
+  
   // Title/Name variants
-  title: ['title', 'name', 'site', 'website', 'service', 'account', 'app', 'application', 'site name', 'website name'],
-  
-  // Email variants
-  email: ['email', 'e-mail', 'mail', 'email address', 'e-mail address', 'user email'],
-  
-  // Username variants
-  username: ['username', 'user', 'user name', 'login', 'login name', 'account name', 'userid', 'user id'],
+  title: ['site name', 'website name', 'title', 'name', 'site', 'website', 'service', 'account', 'app', 'application'],
   
   // Password variants
-  password: ['password', 'pwd', 'pass', 'encrypted_password', 'encrypted password', 'encryptedpassword', 'secret', 'credential'],
+  password: ['encrypted_password', 'encrypted password', 'encryptedpassword', 'password', 'pwd', 'pass', 'secret', 'credential'],
   
   // URL variants
-  url: ['url', 'website', 'link', 'site url', 'web address', 'address', 'domain', 'site address'],
+  url: ['site url', 'web address', 'site address', 'url', 'website', 'link', 'address', 'domain'],
   
   // Notes variants
-  notes: ['notes', 'note', 'extra', 'comments', 'comment', 'description', 'memo', 'details', 'info', 'additional info']
+  notes: ['additional info', 'extra', 'comments', 'comment', 'description', 'details', 'notes', 'note', 'memo', 'info']
 };
 
 /**
