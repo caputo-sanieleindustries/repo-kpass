@@ -75,29 +75,6 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
     }
   };
 
-  // Funzione helper per convertire records in CSV
-  const convertToCSV = (records) => {
-    if (records.length === 0) return '';
-    
-    // Usa solo le colonne necessarie, escludendo quelle extra
-    const validHeaders = ['title', 'email', 'username', 'encrypted_password', 'url', 'notes'];
-    const csvLines = [validHeaders.join(',')];
-    
-    records.forEach(record => {
-      const values = validHeaders.map(header => {
-        const value = record[header] || '';
-        // Escape virgolette e racchiudi in virgolette se contiene virgole
-        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value;
-      });
-      csvLines.push(values.join(','));
-    });
-    
-    return csvLines.join('\n');
-  };
-
   const handleExportClick = () => {
     // Mostra il dialog informativo prima dell'export
     setShowExportInfo(true);
