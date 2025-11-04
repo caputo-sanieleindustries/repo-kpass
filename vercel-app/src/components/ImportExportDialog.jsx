@@ -143,15 +143,6 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
               </div>
             )}
 
-            {processingStatus && (
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                  <p className="text-sm text-blue-900 font-semibold">{processingStatus}</p>
-                </div>
-              </div>
-            )}
-
             {warnings.length > 0 && (
               <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-4">
                 <p className="font-semibold text-green-900 mb-2">✅ Password Criptate Automaticamente!</p>
