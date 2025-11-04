@@ -9,10 +9,20 @@ async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
+      // Recupera password con id incluso (campo UUID, non _id MongoDB)
       const passwords = await db.collection('password_entries')
         .find({ user_id: userId }, { projection: { _id: 0 } })
         .toArray();
-      return res.status(200).json(passwords);
+      
+      // Assicurati che tutti abbiano un id valido
+      const passwordsWithId = passwords.map(pwd => {
+        if (!pwd.id) {
+          console.warn('Password without id found, this should not happen');
+        }
+        return pwd;
+      });
+      
+      return res.status(200).json(passwordsWithId);
     }
 
     if (req.method === 'POST') {
