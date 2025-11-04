@@ -53,23 +53,35 @@ function normalizeColumnName(columnName) {
 function mapColumn(columnName) {
   const normalized = normalizeColumnName(columnName);
   
-  // Cerca prima match esatto, poi match parziale
+  // Fase 1: Match esatto (massima priorità)
   for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
     for (const variant of variants) {
       const normalizedVariant = normalizeColumnName(variant);
-      // Match esatto ha priorità
       if (normalized === normalizedVariant) {
         return property;
       }
     }
   }
   
-  // Se non trova match esatto, cerca match parziale
+  // Fase 2: Match parziale - colonna contiene variante (es: "user_login" contiene "login")
   for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
     for (const variant of variants) {
       const normalizedVariant = normalizeColumnName(variant);
-      if (normalized.includes(normalizedVariant) || normalizedVariant.includes(normalized)) {
+      if (normalized.includes(normalizedVariant)) {
         return property;
+      }
+    }
+  }
+  
+  // Fase 3: Match parziale inverso - variante contiene colonna (es: "username" contiene "user")
+  // Solo se la colonna è abbastanza specifica (min 3 caratteri dopo normalizzazione)
+  if (normalized.length >= 3) {
+    for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
+      for (const variant of variants) {
+        const normalizedVariant = normalizeColumnName(variant);
+        if (normalizedVariant.includes(normalized) && normalizedVariant.length - normalized.length <= 4) {
+          return property;
+        }
       }
     }
   }
