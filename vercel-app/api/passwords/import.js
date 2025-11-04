@@ -62,23 +62,22 @@ function mapColumn(columnName) {
     }
   }
   
-  // Fase 2: Match parziale - colonna contiene variante (es: "user_login" contiene "login")
+  // Fase 2: Colonna contiene variante completa come parola
+  // es: "user_login" contiene "login", "site_name" contiene "site"
+  const normalizedWords = normalized.split(' ');
   for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
     for (const variant of variants) {
       const normalizedVariant = normalizeColumnName(variant);
-      if (normalized.includes(normalizedVariant)) {
-        return property;
-      }
-    }
-  }
-  
-  // Fase 3: Match parziale inverso - variante contiene colonna (es: "username" contiene "user")
-  // Solo se la colonna è abbastanza specifica (min 3 caratteri dopo normalizzazione)
-  if (normalized.length >= 3) {
-    for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
-      for (const variant of variants) {
-        const normalizedVariant = normalizeColumnName(variant);
-        if (normalizedVariant.includes(normalized) && normalizedVariant.length - normalized.length <= 4) {
+      const variantWords = normalizedVariant.split(' ');
+      
+      // Se la variante è multi-word, deve matchare esattamente quella sequenza
+      if (variantWords.length > 1) {
+        if (normalized.includes(normalizedVariant)) {
+          return property;
+        }
+      } else {
+        // Per single-word variants, match come parola intera
+        if (normalizedWords.includes(normalizedVariant)) {
           return property;
         }
       }
