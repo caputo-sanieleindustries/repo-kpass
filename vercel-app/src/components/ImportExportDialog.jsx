@@ -111,9 +111,19 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
     }
   };
 
+  // Se mostriamo il dialog informativo per l'export
+  if (showExportInfo) {
+    return (
+      <ExportInfoDialog
+        onClose={() => setShowExportInfo(false)}
+        onContinue={handleExport}
+      />
+    );
+  }
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]" data-testid="import-export-dialog" aria-describedby="dialog-description">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh]" data-testid="import-export-dialog" aria-describedby="dialog-description">
         <DialogHeader>
           <DialogTitle data-testid="dialog-title">
             {mode === 'import' ? '📥 Importa Password' : '📤 Esporta Password'}
@@ -125,11 +135,38 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
           </DialogDescription>
         </DialogHeader>
 
-        {error && (
-          <div className="error-message" data-testid="dialog-error">
-            {error}
-          </div>
-        )}
+        <ScrollArea className="max-h-[60vh]">
+          <div className="pr-4">
+            {error && (
+              <div className="error-message mb-4" data-testid="dialog-error">
+                {error}
+              </div>
+            )}
+
+            {warnings.length > 0 && (
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded mb-4">
+                <p className="font-semibold text-amber-900 mb-2">⚠️ Password in Chiaro Rilevate!</p>
+                <p className="text-sm text-amber-800 mb-2">
+                  Sono state importate {warnings.length} password in formato non criptato. 
+                  Si consiglia di modificarle e salvarle nuovamente per crittarle.
+                </p>
+                <details className="text-sm text-amber-700">
+                  <summary className="cursor-pointer font-semibold">Mostra dettagli</summary>
+                  <ul className="mt-2 space-y-1 ml-4 max-h-32 overflow-y-auto">
+                    {warnings.map((warning, index) => (
+                      <li key={index}>• {warning}</li>
+                    ))}
+                  </ul>
+                </details>
+                <Button
+                  onClick={onClose}
+                  className="mt-3 w-full"
+                  size="sm"
+                >
+                  OK, Ho Capito
+                </Button>
+              </div>
+            )}
 
         {mode === 'import' ? (
           <div className="space-y-4">
