@@ -409,12 +409,13 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
                   </Button>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 sm:pt-4 sticky bottom-0 bg-background">
                   <Button 
                     variant="outline" 
                     onClick={onClose}
                     data-testid="cancel-button"
                     disabled={loading}
+                    className="w-full sm:w-auto text-sm sm:text-base"
                   >
                     Annulla
                   </Button>
@@ -422,9 +423,9 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
                     onClick={handleExportClick}
                     disabled={loading}
                     data-testid="export-button"
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 w-full sm:w-auto text-sm sm:text-base"
                   >
-                    {loading ? 'Esportazione...' : 'Esporta Password'}
+                    {loading ? 'Esportazione...' : 'Esporta'}
                   </Button>
                 </div>
               </div>
