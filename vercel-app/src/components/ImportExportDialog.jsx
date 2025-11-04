@@ -38,6 +38,7 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
 
     setLoading(true);
     setError('');
+    setWarnings([]);
 
     try {
       const token = localStorage.getItem('token');
@@ -51,8 +52,22 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
         }
       });
 
-      onSuccess(response.data.message);
-      onClose();
+      // Mostra warning se ci sono password in chiaro
+      if (response.data.warnings && response.data.warnings.length > 0) {
+        setWarnings(response.data.warnings);
+      }
+
+      let message = response.data.message;
+      if (response.data.warning_message) {
+        message += '\n\n' + response.data.warning_message;
+      }
+
+      onSuccess(message);
+      
+      // Non chiudere subito se ci sono warning
+      if (!response.data.warnings || response.data.warnings.length === 0) {
+        onClose();
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Errore durante l\'importazione');
     } finally {
