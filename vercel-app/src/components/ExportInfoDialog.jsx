@@ -119,11 +119,11 @@ export default function ExportInfoDialog({ onClose, onContinue }) {
         </ScrollArea>
 
         {/* Footer con azioni */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t sticky bottom-0 bg-background">
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1"
+            className="flex-1 text-sm sm:text-base"
             data-testid="cancel-export-button"
           >
             ❌ Annulla
@@ -132,18 +132,18 @@ export default function ExportInfoDialog({ onClose, onContinue }) {
           <Button
             onClick={() => window.open('/decrypt.html', '_blank')}
             variant="outline"
-            className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+            className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50 text-sm sm:text-base"
             data-testid="open-decrypt-tool-button"
           >
-            🔓 Apri Tool Decrittazione
+            🔓 Tool Decrittazione
           </Button>
           
           <Button
             onClick={onContinue}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-sm sm:text-base"
             data-testid="continue-export-button"
           >
-            ✅ Continua Export
+            ✅ Continua
           </Button>
         </div>
       </DialogContent>
