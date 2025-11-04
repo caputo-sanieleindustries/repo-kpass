@@ -52,11 +52,22 @@ function normalizeColumnName(columnName) {
 function mapColumn(columnName) {
   const normalized = normalizeColumnName(columnName);
   
+  // Cerca prima match esatto, poi match parziale
   for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
     for (const variant of variants) {
-      if (normalized === normalizeColumnName(variant) || 
-          normalized.includes(normalizeColumnName(variant)) ||
-          normalizeColumnName(variant).includes(normalized)) {
+      const normalizedVariant = normalizeColumnName(variant);
+      // Match esatto ha priorità
+      if (normalized === normalizedVariant) {
+        return property;
+      }
+    }
+  }
+  
+  // Se non trova match esatto, cerca match parziale
+  for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
+    for (const variant of variants) {
+      const normalizedVariant = normalizeColumnName(variant);
+      if (normalized.includes(normalizedVariant) || normalizedVariant.includes(normalized)) {
         return property;
       }
     }
