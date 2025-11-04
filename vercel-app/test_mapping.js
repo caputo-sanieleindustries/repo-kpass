@@ -1,12 +1,12 @@
 // Script di test per verificare il mapping delle colonne
 
 const COLUMN_MAPPINGS = {
-  title: ['title', 'name', 'site', 'website', 'service', 'account', 'app', 'application', 'site name', 'website name'],
-  email: ['email', 'e-mail', 'mail', 'email address', 'e-mail address', 'user email'],
-  username: ['username', 'user', 'user name', 'login', 'login name', 'account name', 'userid', 'user id'],
-  password: ['password', 'pwd', 'pass', 'encrypted_password', 'encrypted password', 'encryptedpassword', 'secret', 'credential'],
-  url: ['url', 'website', 'link', 'site url', 'web address', 'address', 'domain', 'site address'],
-  notes: ['notes', 'note', 'extra', 'comments', 'comment', 'description', 'memo', 'details', 'info', 'additional info']
+  email: ['email address', 'e-mail address', 'email', 'e-mail', 'mail'],
+  username: ['username', 'user name', 'login name', 'account name', 'user id', 'userid', 'login', 'user'],
+  title: ['site name', 'website name', 'title', 'name', 'site', 'website', 'service', 'account', 'app', 'application'],
+  password: ['encrypted_password', 'encrypted password', 'encryptedpassword', 'password', 'pwd', 'pass', 'secret', 'credential'],
+  url: ['site url', 'web address', 'site address', 'url', 'website', 'link', 'address', 'domain'],
+  notes: ['additional info', 'extra', 'comments', 'comment', 'description', 'details', 'notes', 'note', 'memo', 'info']
 };
 
 function normalizeColumnName(columnName) {
