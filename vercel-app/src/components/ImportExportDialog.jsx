@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
+import { ScrollArea } from './ui/scroll-area';
 import axios from 'axios';
+import ExportInfoDialog from './ExportInfoDialog';
 
 const API = '/api';
 
@@ -11,6 +13,8 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
   const [exportFormat, setExportFormat] = useState('csv');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showExportInfo, setShowExportInfo] = useState(false);
+  const [warnings, setWarnings] = useState([]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
