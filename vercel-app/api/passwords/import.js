@@ -15,12 +15,11 @@ export const config = {
 };
 
 // Mapping robusto per 27+ varianti di nomi colonne
-// IMPORTANTE: Le varianti più specifiche devono essere prima (es: 'user email' prima di 'user')
 const COLUMN_MAPPINGS = {
-  // Email variants (più specifiche prima)
-  email: ['email address', 'e-mail address', 'user email', 'email', 'e-mail', 'mail'],
+  // Email variants
+  email: ['email address', 'e-mail address', 'email', 'e-mail', 'mail'],
   
-  // Username variants (più specifiche prima)
+  // Username variants
   username: ['username', 'user name', 'login name', 'account name', 'user id', 'userid', 'login', 'user'],
   
   // Title/Name variants
