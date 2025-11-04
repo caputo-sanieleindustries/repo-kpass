@@ -384,36 +384,64 @@
         // Funzione principale di decrittazione
         async function decryptPassword(encryptedData, masterPassword, username = 'default') {
             try {
+                console.log('Decrypting data...'); // Debug
+                
                 // Parse iv e dati criptati
                 const parts = encryptedData.trim().split(':');
                 if (parts.length !== 2) {
-                    throw new Error('Formato password criptata non valido. Deve essere nel formato iv:encrypted');
+                    throw new Error('Formato password criptata non valido. Deve essere nel formato iv:encrypted (due parti separate da :)');
                 }
 
                 const [ivHex, encryptedHex] = parts;
+                
+                console.log('IV hex length:', ivHex.length); // Debug
+                console.log('Encrypted hex length:', encryptedHex.length); // Debug
+                
+                // Verifica che siano hex validi
+                if (!/^[0-9a-f]+$/i.test(ivHex) || !/^[0-9a-f]+$/i.test(encryptedHex)) {
+                    throw new Error('Formato non valido: iv e encrypted devono contenere solo caratteri esadecimali (0-9, a-f)');
+                }
+                
                 const iv = hex2ab(ivHex);
                 const encrypted = hex2ab(encryptedHex);
 
+                console.log('IV bytes:', iv.length); // Debug
+                console.log('Encrypted bytes:', encrypted.length); // Debug
+
                 // Usa lo stesso salt dell'applicazione
                 const salt = `safepass-${username}`;
+                console.log('Using salt:', salt); // Debug
 
                 // Deriva la chiave
+                console.log('Deriving key...'); // Debug
                 const key = await deriveKey(masterPassword, salt);
+                console.log('Key derived successfully'); // Debug
 
-                // Decritta
+                // Decripta
+                console.log('Decrypting...'); // Debug
                 const decrypted = await window.crypto.subtle.decrypt(
                     { name: 'AES-GCM', iv },
                     key,
                     encrypted
                 );
+                console.log('Decryption successful'); // Debug
 
-                return ab2str(decrypted);
+                const result = ab2str(decrypted);
+                console.log('Result length:', result.length); // Debug
+                
+                return result;
             } catch (error) {
-                console.error('Decryption error:', error);
-                if (error.message.includes('formato')) {
+                console.error('Decryption error details:', error); // Debug
+                
+                if (error.message.includes('formato') || error.message.includes('Formato')) {
                     throw error;
                 }
-                throw new Error('Decrittazione fallita. Verifica che la master password sia corretta.');
+                
+                if (error.name === 'OperationError' || error.message.includes('operation')) {
+                    throw new Error('Decrittazione fallita. Verifica che la master password e lo username siano corretti.');
+                }
+                
+                throw new Error(`Errore durante la decrittazione: ${error.message}`);
             }
         }
 
