@@ -14,6 +14,105 @@ export const config = {
   },
 };
 
+// Mapping robusto per 27+ varianti di nomi colonne
+const COLUMN_MAPPINGS = {
+  // Title/Name variants
+  title: ['title', 'name', 'site', 'website', 'service', 'account', 'app', 'application', 'site name', 'website name'],
+  
+  // Email variants
+  email: ['email', 'e-mail', 'mail', 'email address', 'e-mail address', 'user email'],
+  
+  // Username variants
+  username: ['username', 'user', 'user name', 'login', 'login name', 'account name', 'userid', 'user id'],
+  
+  // Password variants
+  password: ['password', 'pwd', 'pass', 'encrypted_password', 'encrypted password', 'encryptedpassword', 'secret', 'credential'],
+  
+  // URL variants
+  url: ['url', 'website', 'link', 'site url', 'web address', 'address', 'domain', 'site address'],
+  
+  // Notes variants
+  notes: ['notes', 'note', 'extra', 'comments', 'comment', 'description', 'memo', 'details', 'info', 'additional info']
+};
+
+/**
+ * Normalizza il nome della colonna rimuovendo spazi, caratteri speciali e convertendo in lowercase
+ */
+function normalizeColumnName(columnName) {
+  return columnName
+    .toLowerCase()
+    .trim()
+    .replace(/[_\s-]+/g, ' ') // Sostituisce underscore, spazi multipli, trattini con singolo spazio
+    .replace(/[^a-z0-9\s]/g, ''); // Rimuove caratteri speciali
+}
+
+/**
+ * Mappa una colonna alla proprietà corretta usando il mapping
+ */
+function mapColumn(columnName) {
+  const normalized = normalizeColumnName(columnName);
+  
+  for (const [property, variants] of Object.entries(COLUMN_MAPPINGS)) {
+    for (const variant of variants) {
+      if (normalized === normalizeColumnName(variant) || 
+          normalized.includes(normalizeColumnName(variant)) ||
+          normalizeColumnName(variant).includes(normalized)) {
+        return property;
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Normalizza un record mappando le colonne e pulendo i dati
+ */
+function normalizeRecord(record) {
+  const normalized = {
+    title: null,
+    email: null,
+    username: null,
+    password: null,
+    url: null,
+    notes: null
+  };
+  
+  // Mappa tutte le colonne
+  for (const [key, value] of Object.entries(record)) {
+    const mappedProperty = mapColumn(key);
+    if (mappedProperty && value) {
+      // Converti il valore in stringa e rimuovi spazi extra
+      const cleanValue = String(value).trim();
+      if (cleanValue && cleanValue !== 'null' && cleanValue !== 'undefined') {
+        normalized[mappedProperty] = cleanValue;
+      }
+    }
+  }
+  
+  return normalized;
+}
+
+/**
+ * Controlla se una password è in chiaro (euristica)
+ */
+function isPlainTextPassword(password) {
+  if (!password || password.length === 0) return false;
+  
+  // Se contiene ':' e caratteri hex, probabilmente è criptata (formato iv:encrypted)
+  if (password.includes(':') && /^[0-9a-f]+:[0-9a-f]+$/i.test(password)) {
+    return false;
+  }
+  
+  // Se è molto lunga (>64 char) e solo hex, probabilmente è criptata
+  if (password.length > 64 && /^[0-9a-f]+$/i.test(password)) {
+    return false;
+  }
+  
+  // Altrimenti, considera come testo in chiaro
+  return true;
+}
+
 async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ detail: 'Method not allowed' });
@@ -35,53 +134,81 @@ async function handler(req, res) {
     const filename = file.originalFilename;
     const extension = filename.split('.').pop().toLowerCase();
 
-    let importedCount = 0;
+    let result = { importedCount: 0, warnings: [] };
 
     if (extension === 'csv') {
       const records = parse(buffer, {
         columns: true,
         skip_empty_lines: true,
-        trim: true
+        trim: true,
+        relax_column_count: true, // Permette righe con numero variabile di colonne
+        skip_records_with_error: true // Salta righe con errori
       });
-      importedCount = await processImportRecords(records, userId, db);
+      result = await processImportRecords(records, userId, db);
     } else if (extension === 'xlsx' || extension === 'xlsm') {
       const workbook = XLSX.read(buffer);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const records = XLSX.utils.sheet_to_json(worksheet);
-      importedCount = await processImportRecords(records, userId, db);
+      const records = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+      result = await processImportRecords(records, userId, db);
     } else if (extension === 'xml') {
       const xmlString = buffer.toString();
       const parser = new xml2js.Parser();
-      const result = await parser.parseStringPromise(xmlString);
+      const xmlResult = await parser.parseStringPromise(xmlString);
       
       let entries = [];
-      if (result.passwords?.entry) {
-        entries = Array.isArray(result.passwords.entry)
-          ? result.passwords.entry
-          : [result.passwords.entry];
+      if (xmlResult.passwords?.entry) {
+        entries = Array.isArray(xmlResult.passwords.entry)
+          ? xmlResult.passwords.entry
+          : [xmlResult.passwords.entry];
       }
 
       for (const entry of entries) {
+        const record = {
+          title: entry.title?.[0] || entry.name?.[0] || '',
+          email: entry.email?.[0] || '',
+          username: entry.username?.[0] || '',
+          password: entry.encrypted_password?.[0] || entry.password?.[0] || '',
+          url: entry.url?.[0] || '',
+          notes: entry.notes?.[0] || entry.extra?.[0] || ''
+        };
+        
+        // Salta entry vuote
+        if (!record.title && !record.username && !record.url) continue;
+        
+        // Verifica password in chiaro
+        if (record.password && isPlainTextPassword(record.password)) {
+          result.warnings.push(`Password in chiaro rilevata per: ${record.title || 'Untitled'}`);
+        }
+        
         const passwordEntry = new PasswordEntry({
           user_id: userId,
-          title: entry.title?.[0] || entry.name?.[0] || 'Untitled',
-          email: entry.email?.[0] || null,
-          username: entry.username?.[0] || null,
-          encrypted_password: entry.encrypted_password?.[0] || entry.password?.[0] || '',
-          url: entry.url?.[0] || null,
-          notes: entry.notes?.[0] || entry.extra?.[0] || null
+          title: record.title || 'Untitled',
+          email: record.email || null,
+          username: record.username || null,
+          encrypted_password: record.password || '',
+          url: record.url || null,
+          notes: record.notes || null
         });
         await db.collection('password_entries').insertOne(passwordEntry.toJSON());
-        importedCount++;
+        result.importedCount++;
       }
     } else {
       return res.status(400).json({ detail: 'Unsupported file format' });
     }
 
     fs.unlinkSync(file.filepath);
-    return res.status(200).json({
-      message: `Successfully imported ${importedCount} passwords`
-    });
+    
+    const response = {
+      message: `Successfully imported ${result.importedCount} passwords`,
+      imported: result.importedCount
+    };
+    
+    if (result.warnings.length > 0) {
+      response.warnings = result.warnings;
+      response.warning_message = `⚠️ ATTENZIONE: ${result.warnings.length} password in chiaro rilevate! Si consiglia di ricriptarle.`;
+    }
+    
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Import error:', error);
     return res.status(400).json({ detail: `Error importing file: ${error.message}` });
@@ -90,32 +217,37 @@ async function handler(req, res) {
 
 async function processImportRecords(records, userId, db) {
   let importedCount = 0;
-  const normalizedRecords = records.map(record => {
-    const normalized = {};
-    for (const [key, value] of Object.entries(record)) {
-      normalized[key.toLowerCase().trim()] = value;
+  const warnings = [];
+  
+  for (const record of records) {
+    // Normalizza il record con mapping intelligente
+    const normalized = normalizeRecord(record);
+    
+    // Salta righe completamente vuote
+    if (!normalized.title && !normalized.username && !normalized.url && !normalized.password) {
+      continue;
     }
-    return normalized;
-  });
-
-  for (const record of normalizedRecords) {
-    if (!record.title && !record.name && !record.url) continue;
+    
+    // Verifica se la password è in chiaro
+    if (normalized.password && isPlainTextPassword(normalized.password)) {
+      warnings.push(`Password in chiaro rilevata per: ${normalized.title || normalized.username || 'Untitled'}`);
+    }
 
     const passwordEntry = new PasswordEntry({
       user_id: userId,
-      title: record.title || record.name || 'Untitled',
-      email: record.email || null,
-      username: record.username || null,
-      encrypted_password: record.encrypted_password || record.password || '',
-      url: record.url || record.website || null,
-      notes: record.notes || record.extra || null
+      title: normalized.title || normalized.username || 'Untitled',
+      email: normalized.email || null,
+      username: normalized.username || null,
+      encrypted_password: normalized.password || '',
+      url: normalized.url || null,
+      notes: normalized.notes || null
     });
 
     await db.collection('password_entries').insertOne(passwordEntry.toJSON());
     importedCount++;
   }
 
-  return importedCount;
+  return { importedCount, warnings };
 }
 
 export default handleCors(authMiddleware(handler));

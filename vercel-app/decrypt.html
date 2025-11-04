@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafePass - Decrittazione Password Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .lock-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1976D2;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #f57c00;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            display: block;
+        }
+
+        .result.error {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            display: block;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .result.success .result-title {
+            color: #2e7d32;
+        }
+
+        .result.error .result-title {
+            color: #c62828;
+        }
+
+        .decrypted-password {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            word-break: break-all;
+            margin-top: 10px;
+            border: 2px solid #4caf50;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            background: #4caf50;
+            padding: 10px 20px;
+            width: auto;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background: #45a049;
+        }
+
+        .steps {
+            margin: 25px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        .step-text {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .lock-icon {
+                font-size: 36px;
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
+
+        .offline-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="lock-icon">🔓</div>
+            <h1>
+                Decrittazione Password
+                <span class="offline-badge">OFFLINE</span>
+            </h1>
+            <p class="subtitle">Tool 100% offline - i tuoi dati rimangono sul tuo dispositivo</p>
+        </div>
+
+        <div class="info-box">
+            <strong>🔒 Privacy Garantita:</strong> Questo tool funziona completamente offline nel tuo browser. Nessun dato viene inviato a server esterni. Il codice sorgente è visibile e verificabile.
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-text">Apri il file esportato da SafePass (CSV, XLSX, XML) e copia la password criptata</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">Incolla la password criptata nel campo "Password Criptata" qui sotto</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-text">Inserisci la tua Master Password (quella usata per il login su SafePass)</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-text">Clicca su "Decritta Password" per vedere la password originale</div>
+            </div>
+        </div>
+
+        <form id="decryptForm">
+            <div class="form-group">
+                <label for="encryptedPassword">
+                    🔐 Password Criptata
+                    <span style="color: #999; font-weight: 400;">(formato: iv:encrypted)</span>
+                </label>
+                <textarea 
+                    id="encryptedPassword" 
+                    placeholder="Esempio: a1b2c3d4e5f6g7h8i9j0k1l2:m3n4o5p6q7r8s9t0u1v2w3x4y5z6..."
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="masterPassword">
+                    🔑 Master Password
+                    <span style="color: #999; font-weight: 400;">(la tua password di SafePass)</span>
+                </label>
+                <input 
+                    type="password" 
+                    id="masterPassword" 
+                    placeholder="Inserisci la tua master password"
+                    required
+                />
+            </div>
+
+            <div class="form-group">
+                <label for="username">
+                    👤 Username (opzionale)
+                    <span style="color: #999; font-weight: 400;">(se diverso dal default)</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    placeholder="Lascia vuoto per usare 'default'"
+                />
+            </div>
+
+            <button type="submit" class="btn" id="decryptBtn">
+                🔓 Decritta Password
+            </button>
+        </form>
+
+        <div id="result" class="result">
+            <div class="result-title" id="resultTitle"></div>
+            <div id="resultContent"></div>
+        </div>
+
+        <div class="warning-box" style="margin-top: 25px;">
+            <strong>⚠️ Importante:</strong> Non condividere mai le tue password criptate o la master password. Questo tool è pensato per uso personale e recupero delle tue password esportate.
+        </div>
+    </div>
+
+    <script>
+        // Utility functions per conversione
+        function str2ab(str) {
+            const encoder = new TextEncoder();
+            return encoder.encode(str);
+        }
+
+        function ab2str(buffer) {
+            const decoder = new TextDecoder();
+            return decoder.decode(buffer);
+        }
+
+        function hex2ab(hex) {
+            const bytes = new Uint8Array(hex.length / 2);
+            for (let i = 0; i < hex.length; i += 2) {
+                bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+            }
+            return bytes;
+        }
+
+        // Deriva la chiave di crittografia dalla master password
+        async function deriveKey(masterPassword, salt) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw',
+                encoder.encode(masterPassword),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveKey']
+            );
+
+            return window.crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: encoder.encode(salt),
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['decrypt']
+            );
+        }
+
+        // Funzione principale di decrittazione
+        async function decryptPassword(encryptedData, masterPassword, username = 'default') {
+            try {
+                // Parse iv e dati criptati
+                const parts = encryptedData.trim().split(':');
+                if (parts.length !== 2) {
+                    throw new Error('Formato password criptata non valido. Deve essere nel formato iv:encrypted');
+                }
+
+                const [ivHex, encryptedHex] = parts;
+                const iv = hex2ab(ivHex);
+                const encrypted = hex2ab(encryptedHex);
+
+                // Usa lo stesso salt dell'applicazione
+                const salt = `safepass-${username}`;
+
+                // Deriva la chiave
+                const key = await deriveKey(masterPassword, salt);
+
+                // Decritta
+                const decrypted = await window.crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv },
+                    key,
+                    encrypted
+                );
+
+                return ab2str(decrypted);
+            } catch (error) {
+                console.error('Decryption error:', error);
+                if (error.message.includes('formato')) {
+                    throw error;
+                }
+                throw new Error('Decrittazione fallita. Verifica che la master password sia corretta.');
+            }
+        }
+
+        // Copia negli appunti
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                // Fallback per browser più vecchi
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const success = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                return success;
+            }
+        }
+
+        // Form submit handler
+        document.getElementById('decryptForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const encryptedPassword = document.getElementById('encryptedPassword').value.trim();
+            const masterPassword = document.getElementById('masterPassword').value;
+            const username = document.getElementById('username').value.trim() || 'default';
+            const resultDiv = document.getElementById('result');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultContent = document.getElementById('resultContent');
+            const decryptBtn = document.getElementById('decryptBtn');
+
+            // Reset UI
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'none';
+            decryptBtn.disabled = true;
+            decryptBtn.textContent = '🔄 Decrittazione in corso...';
+
+            try {
+                const decryptedPassword = await decryptPassword(encryptedPassword, masterPassword, username);
+
+                // Mostra risultato
+                resultDiv.className = 'result success';
+                resultTitle.textContent = '✅ Password Decrittata con Successo!';
+                resultContent.innerHTML = `
+                    <div class="decrypted-password" id="decryptedPasswordDisplay">${decryptedPassword}</div>
+                    <button class="btn copy-btn" onclick="handleCopy()">
+                        📋 Copia Password
+                    </button>
+                `;
+                
+                // Salva la password per la funzione di copia
+                window.currentDecryptedPassword = decryptedPassword;
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultTitle.textContent = '❌ Errore di Decrittazione';
+                resultContent.innerHTML = `<p>${error.message}</p>`;
+            } finally {
+                decryptBtn.disabled = false;
+                decryptBtn.textContent = '🔓 Decritta Password';
+            }
+        });
+
+        // Handler per copia password
+        async function handleCopy() {
+            const success = await copyToClipboard(window.currentDecryptedPassword);
+            const copyBtn = event.target;
+            
+            if (success) {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ Copiato!';
+                copyBtn.style.background = '#45a049';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '#4caf50';
+                }, 2000);
+            } else {
+                alert('Impossibile copiare automaticamente. Copia manualmente la password.');
+            }
+        }
+
+        // Pulisci dati sensibili quando si lascia la pagina
+        window.addEventListener('beforeunload', () => {
+            document.getElementById('encryptedPassword').value = '';
+            document.getElementById('masterPassword').value = '';
+            delete window.currentDecryptedPassword;
+        });
+    </script>
+</body>
+</html>
