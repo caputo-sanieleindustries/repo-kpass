@@ -334,12 +334,17 @@ export default function ImportExportDialog({ mode, onClose, onSuccess }) {
                   <strong>Formati supportati:</strong>
                   <ul className="text-sm mt-2 space-y-1">
                     <li>• CSV - 1Password, LastPass, formato generico</li>
-                    <li>• XML - Formato strutturato</li>
-                    <li>• XLSX/XLSM - Excel</li>
+                    <li>• XML - Formato strutturato (in sviluppo)</li>
+                    <li>• XLSX/XLSM - Excel (in sviluppo)</li>
                   </ul>
-                  <p className="text-sm mt-3 text-blue-700">
-                    <strong>✨ Mapping Intelligente:</strong> Il sistema riconosce automaticamente 27+ varianti di nomi colonne e normalizza i dati.
-                  </p>
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm text-blue-700">
+                      <strong>✨ Mapping Intelligente:</strong> Il sistema riconosce automaticamente 27+ varianti di nomi colonne e normalizza i dati.
+                    </p>
+                    <p className="text-sm text-green-700">
+                      <strong>🔒 Crittografia Automatica:</strong> Le password in chiaro vengono automaticamente criptate con AES-256 prima del salvataggio!
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
