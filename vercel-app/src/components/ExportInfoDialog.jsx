@@ -6,16 +6,16 @@ import { ScrollArea } from './ui/scroll-area';
 export default function ExportInfoDialog({ onClose, onContinue }) {
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh]" data-testid="export-info-dialog">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" data-testid="export-info-dialog">
         <DialogHeader>
-          <DialogTitle className="text-2xl flex items-center gap-2">
+          <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2">
             <span>🔐</span>
             <span>Come Funziona l'Export delle Password</span>
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6 py-4">
+        <ScrollArea className="max-h-[60vh] sm:max-h-[65vh] pr-2 sm:pr-4">
+          <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
             {/* Intro */}
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
               <p className="text-sm text-blue-900">
